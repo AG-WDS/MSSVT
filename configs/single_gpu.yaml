@@ -1,0 +1,38 @@
+experiment_name: MSSVT
+log_dir: ./logs
+checkpoint_dir: ./checkpoints
+epochs: 100
+batch_size: 4
+accumulate_steps: 16
+num_workers: 12
+deep_supervision: True
+aux_weights:
+  - 0.4
+  - 0.4
+
+
+lr: 2e-4
+weight_decay: 1e-4
+early_stop_patience: 20
+random_seed: 42
+eta_min: 2e-6
+ignore_index: 255
+
+
+dataset_dir: /data/Rice2024/ALL
+train_images_dir: train/data
+train_masks_dir: train/label_severity
+val_images_dir: val/data
+val_masks_dir: val/label_severity
+test_images_dir: test/data
+test_masks_dir: test/label_severity
+
+
+checkpoint_path: None
+resume: False
+
+num_classes: 7
+class_names: [road, sugarcane, rice_normal, rice_severe, rice_mild, weed, abnormal]
+
+gpus: [0] # 1
+precision: bf16  # Double precision (64), full precision (32), half precision (16) or bfloat16 precision (bf16). Can be used on CPU, GPU, TPUs, HPUs or IPUs. Default: ``32``.

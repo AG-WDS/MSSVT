@@ -1,0 +1,9 @@
+logs/
+**.tar.gz
+/*.sh
+**/__pycache__/
+**/.ipynb_checkpoints
+*.csv
+.vscode
+wandb/
+

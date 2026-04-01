@@ -1,0 +1,78 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+#
+# This software may be used and distributed in accordance with
+# the terms of the DINOv3 License Agreement.
+
+from typing import Callable, List, Optional, Tuple
+
+import torch.nn.functional as F
+from torch import Tensor, nn
+import torch
+import math
+from torch.nn import init
+
+
+def cat_keep_shapes(x_list: List[Tensor]) -> Tuple[Tensor, List[Tuple[int]], List[int]]:
+    shapes = [x.shape for x in x_list]
+    num_tokens = [x.select(dim=-1, index=0).numel() for x in x_list]
+    flattened = torch.cat([x.flatten(0, -2) for x in x_list])
+    return flattened, shapes, num_tokens
+
+
+def uncat_with_shapes(flattened: Tensor, shapes: List[Tuple[int]], num_tokens: List[int]) -> List[Tensor]:
+    outputs_splitted = torch.split_with_sizes(flattened, num_tokens, dim=0)
+    shapes_adjusted = [shape[:-1] + torch.Size([flattened.shape[-1]]) for shape in shapes]
+    outputs_reshaped = [o.reshape(shape) for o, shape in zip(outputs_splitted, shapes_adjusted)]
+    return outputs_reshaped
+
+
+class ListForwardMixin(object):
+    def forward(self, x: Tensor):
+        raise NotImplementedError
+
+    def forward_list(self, x_list: List[Tensor]) -> List[Tensor]:
+        x_flat, shapes, num_tokens = cat_keep_shapes(x_list)
+        x_flat = self.forward(x_flat)
+        return uncat_with_shapes(x_flat, shapes, num_tokens)
+
+
+class SwiGLUFFN(nn.Module, ListForwardMixin):
+    def __init__(
+        self,
+        in_features: int,
+        hidden_features: Optional[int] = None,
+        out_features: Optional[int] = None,
+        act_layer: Optional[Callable[..., nn.Module]] = None,
+        drop: float = 0.0,
+        bias: bool = True,
+        align_to: int = 64,
+        device=None,
+    ) -> None:
+        super().__init__()
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
+        d = int(hidden_features * 2 / 3)
+        swiglu_hidden_features = d + (-d % align_to)
+        self.embed_dim = in_features
+        self.hidden_dim = swiglu_hidden_features
+        
+        self.w1 = nn.Conv2d(in_features, swiglu_hidden_features, kernel_size=1, bias=bias, device=device)
+        self.w2 = nn.Conv2d(in_features, swiglu_hidden_features, kernel_size=1, bias=bias, device=device)
+        self.w3 = nn.Conv2d(swiglu_hidden_features, out_features, kernel_size=1, bias=bias, device=device)
+        self.reset_parameters()
+
+    def forward(self, x: Tensor) -> Tensor:
+        x1 = self.w1(x)
+        x2 = self.w2(x)
+        hidden = F.silu(x1) * x2
+        return self.w3(hidden)
+    
+    def reset_parameters(self):
+        self.init_linear(self.w1.weight)
+        self.init_linear(self.w2.weight)
+        self.init_linear(self.w3.weight)
+
+    def init_linear(self, x):
+        std = math.sqrt(2 / (self.hidden_dim + self.embed_dim))
+        init.trunc_normal_(x, mean=0, std=std, a = -3 * std, b = 3 * std)
+        
