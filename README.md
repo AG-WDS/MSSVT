@@ -6,7 +6,7 @@
 > [!IMPORTANT]
 > **Restrictions:** The shared dataset and code are restricted to validation and comparative analysis. Any use of this data for independent publications is prohibited in the absence of additional licensing or permissions.
 
-## 🚀 Architecture & Performance
+## 🚀 Architecture & Performance of MSSVT
 
 ### 1. Overall Architecture
 MSSVT integrates a **Hybrid Volumetric-Planar Backbone**, **Volumetric Hybrid Attention (VHA)**, and **Progressive Feature Fusion** to robustly capture spatial-spectral context for precise lodging grading.
