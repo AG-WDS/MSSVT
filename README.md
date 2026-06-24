@@ -167,7 +167,8 @@ If you find **MSSVT** useful for your research or work, please consider citing o
   pages={112087},
   year={2026},
   publisher={Elsevier},
-  doi={10.1016/j.compag.2026.112087}
+  doi={10.1016/j.compag.2026.112087},
+  url={https://doi.org/10.1016/j.compag.2026.112087}
 }
 ```
 
