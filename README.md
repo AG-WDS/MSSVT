@@ -159,7 +159,16 @@ This project is built upon the following excellent open-source projects. We than
 If you find **MSSVT** useful for your research or work, please consider citing our paper: 
 
 ```bibtex
-
+@article{WANG2026112087,
+  title={MSSVT: Multi-branch spatial-spectral volumetric transformer for rice lodging segmentation with UAV multimodal fusion},
+  author={Wang, Zilin and Liu, Xiaoguang and Geng, Changxing and Wang, Dashuai},
+  journal={Computers and Electronics in Agriculture},
+  volume={252},
+  pages={112087},
+  year={2026},
+  publisher={Elsevier},
+  doi={10.1016/j.compag.2026.112087}
+}
 ```
 
 
